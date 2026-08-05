@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="EventManagement.Data/EventManagement.Data.csproj" />
+  <Project Path="EventManagement.Web/EventManagement.Web.csproj" />
+</Solution>
