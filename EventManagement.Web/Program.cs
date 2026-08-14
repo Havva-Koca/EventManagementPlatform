@@ -1,5 +1,7 @@
 using EventManagement.Data.Model.Entities;
 using EventManagement.Data.Repositories;
+using EventManagement.Data.Repositories.Implementations;
+using EventManagement.Data.Repositories.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<EventManagementDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
