@@ -29,3 +29,51 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+
+:root {
+    --color-primary: #9575cd; /* ana lila - orta ton */
+    --color-primary-dark: #7e57c2; /* hover için - hafif koyu, ama önceki kadar sert değil */
+    --color-primary-light: #ede7f6; /* açık lila arka plan */
+    --color-accent: #b39ddb; /* focus ring için orta-açık lila */
+}
+
+body {
+    background-color: #faf8fc;
+}
+
+.navbar {
+    background-color: var(--color-primary) !important;
+}
+
+    .navbar .nav-link,
+    .navbar-brand {
+        color: white !important;
+    }
+
+.btn-primary {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+    .btn-primary:hover {
+        background-color: var(--color-primary-dark);
+        border-color: var(--color-primary-dark);
+    }
+
+a {
+    color: var(--color-primary);
+}
+
+    a:hover {
+        color: var(--color-primary-dark);
+    }
+
+h1, h2, h3 {
+    color: var(--color-primary-dark);
+}
+
+.form-control:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 0.2rem rgba(124, 92, 191, 0.25);
+}
