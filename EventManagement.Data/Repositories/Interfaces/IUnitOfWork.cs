@@ -10,7 +10,8 @@ public interface IUnitOfWork : IDisposable
         ICategoryRepository Categories { get; }
         IVenueRepository Venues { get; }
         IRegistrationRepository Registrations { get; }
+        IOrganizerRequestRepository OrganizerRequests { get; }
 
-        Task<int> SaveChangesAsync();
+    Task<int> SaveChangesAsync();
     
 }

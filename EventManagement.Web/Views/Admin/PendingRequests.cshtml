@@ -1,0 +1,41 @@
+﻿@model List<OrganizerRequest>
+
+@{
+    ViewData["Title"] = "Pending Organizer Requests";
+}
+
+<h2 class="mb-4">Pending Organizer Requests</h2>
+
+@if (!Model.Any())
+{
+    <p>No pending requests.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Requested At</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var request in Model)
+            {
+                <tr>
+                    <td>@request.User.Email</td>
+                    <td>@request.RequestedAt.ToString("g")</td>
+                    <td>
+                        <form asp-action="ApproveRequest" asp-route-id="@request.Id" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                        </form>
+                        <form asp-action="RejectRequest" asp-route-id="@request.Id" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-danger">Reject</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

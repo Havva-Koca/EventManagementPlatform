@@ -15,6 +15,7 @@ public class UnitOfWork : IUnitOfWork
         Categories = new CategoryRepository(_context);
         Venues = new VenueRepository(_context);
         Registrations = new RegistrationRepository(_context);
+        OrganizerRequests = new OrganizerRequestRepository(_context);
     }
     public IEventRepository Events { get; }
 
@@ -23,6 +24,8 @@ public class UnitOfWork : IUnitOfWork
     public IVenueRepository Venues { get; }
 
     public IRegistrationRepository Registrations { get; }
+
+    public IOrganizerRequestRepository OrganizerRequests { get; }
 
     public void Dispose()
     {
