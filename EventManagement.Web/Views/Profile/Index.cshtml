@@ -1,0 +1,42 @@
+﻿@model ProfileViewModel
+
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h2 class="mb-4">My Profile</h2>
+
+        <div class="card p-4 shadow-sm">
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Full Name</dt>
+                <dd class="col-sm-9">@Model.FullName</dd>
+
+                <dt class="col-sm-3">Email</dt>
+                <dd class="col-sm-9">@Model.Email</dd>
+
+                <dt class="col-sm-3">Roles</dt>
+                <dd class="col-sm-9">@string.Join(", ", Model.Roles)</dd>
+            </dl>
+
+            <hr />
+
+            <div class="d-flex gap-2">
+                <a asp-controller="Profile" asp-action="ChangePassword" class="btn btn-secondary btn-sm">Change Password</a>
+
+                @if (!Model.Roles.Contains("Organizer") && !Model.Roles.Contains("Admin"))
+                {
+                    <form asp-controller="Account" asp-action="RequestOrganizerRole" method="post">
+                        <button type="submit" class="btn btn-primary btn-sm">Request Organizer Role</button>
+                    </form>
+                }
+            </div>
+        </div>
+
+        @if (TempData["Message"] != null)
+        {
+            <div class="alert alert-info mt-3">@TempData["Message"]</div>
+        }
+    </div>
+</div>
