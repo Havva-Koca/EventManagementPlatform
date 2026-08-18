@@ -64,6 +64,8 @@ public class CreateEventViewModel :IValidatableObject
     public List<SelectListItem>? TimeSlots { get; set; }
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
+        var errors = new List<ValidationResult>();
+
         if (StartDate.HasValue && EndDate.HasValue &&
             !string.IsNullOrEmpty(StartTime) && !string.IsNullOrEmpty(EndTime))
         {
@@ -72,10 +74,12 @@ public class CreateEventViewModel :IValidatableObject
 
             if (endDateTime <= startDateTime)
             {
-                yield return new ValidationResult(
+                errors.Add(new ValidationResult(
                     "End date/time must be after the start date/time.",
-                    new[] { nameof(EndDate), nameof(EndTime) });
+                    [ nameof(EndDate), nameof(EndTime) ]));
             }
         }
+
+        return errors;
     }
 }
