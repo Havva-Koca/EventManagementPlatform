@@ -53,7 +53,7 @@ public class EventsController : Controller
         return View(model);
     }
 
-    private List<SelectListItem> GenerateTimeSlots()
+    private static List<SelectListItem> GenerateTimeSlots()
     {
         var slots = new List<SelectListItem>();
 
@@ -110,9 +110,9 @@ public class EventsController : Controller
             v.Name == model.VenueName && v.City == model.VenueCity);
 
         Venue venue;
-        if (existingVenues.Any())
+        if (existingVenues.Count > 0)
         {
-            venue = existingVenues.First();
+            venue = existingVenues[0];
         }
         else
         {
