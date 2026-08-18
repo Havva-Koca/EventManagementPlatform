@@ -70,4 +70,8 @@ public class AdminController : Controller
 
         return RedirectToAction("PendingRequests");
     }
+    public IActionResult Index()
+    {
+        return View();
+    }
 }

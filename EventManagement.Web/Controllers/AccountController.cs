@@ -50,7 +50,7 @@ public class AccountController : Controller
         {
             await _userManager.AddToRoleAsync(user, "Participant");
             await _signInManager.SignInAsync(user, isPersistent: false);
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index", "Events");
         }
 
         foreach (var error in result.Errors)
@@ -84,7 +84,7 @@ public class AccountController : Controller
             {
                 return Redirect(returnUrl);
             }
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index", "Events");
         }
 
         ModelState.AddModelError(string.Empty, "Invalid login attempt.");
@@ -95,7 +95,7 @@ public class AccountController : Controller
     public async Task<IActionResult> Logout()
     {
         await _signInManager.SignOutAsync();
-        return RedirectToAction("Index", "Home");
+        return RedirectToAction("Index", "Events");
     }
 
     [HttpPost]
@@ -133,7 +133,7 @@ public class AccountController : Controller
         await _unitOfWork.SaveChangesAsync();
 
         TempData["Message"] = "Your request has been submitted.";
-        return RedirectToAction("Index", "Home");
+        return RedirectToAction("Index", "Events");
     }
 
 

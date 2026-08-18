@@ -42,6 +42,8 @@ public class EventRepository : GenericRepository<Event>, IEventRepository
     public async Task<IReadOnlyList<Event>> GetPublishedEventsAsync()
     {
         return await _dbSet
+            .Include(e => e.Category)
+            .Include(e => e.Venue)
             .Where(e => e.Status == EventStatus.Published)
             .ToListAsync();
     }
