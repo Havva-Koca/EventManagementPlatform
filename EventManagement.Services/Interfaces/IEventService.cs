@@ -14,6 +14,9 @@ public interface IEventService
     Task<EventOperationResult> UpdateEventAsync(int eventId, EventUpsertDto dto, string currentUserId, bool isAdmin);
 
     Task<(EventOperationResult Result, Event? EventItem)> GetEditableEventAsync(int eventId, string currentUserId, bool isAdmin);
+    Task<EventOperationResult> PublishEventAsync(int eventId, string currentUserId, bool isAdmin);
+    Task<EventOperationResult> CancelEventAsync(int eventId, string currentUserId, bool isAdmin);
+    Task<EventOperationResult> DeleteEventAsync(int eventId, string currentUserId, bool isAdmin);
 
 
 }

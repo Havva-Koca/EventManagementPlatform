@@ -54,6 +54,13 @@ public class EventsController : Controller
             return NotFound();
         }
         var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var isAdmin = User.IsInRole("Admin");
+
+        if (eventItem.Status == EventStatus.Draft &&
+            !isAdmin && eventItem.OrganizerId != currentUserId)
+        {
+            return NotFound();
+        }
         var confirmedCount = eventItem.Registrations.Count(r => r.Status == RegistrationStatus.Confirmed);
         var model = new EventDetailsViewModel
         {
@@ -262,5 +269,65 @@ public class EventsController : Controller
         TempData["EventMessage"] = "Event updated successfully.";
  
         return RedirectToAction("Details", new { id });
+    }
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Publish(int id)
+    {
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var isAdmin = User.IsInRole("Admin");
+
+        var result = await _eventService.PublishEventAsync(id, currentUserId!, isAdmin);
+
+        switch (result)
+        {
+            case EventOperationResult.NotFound:
+                return NotFound();
+            case EventOperationResult.Forbidden:
+                return Forbid();
+            default:
+                TempData["EventMessage"] = "Event published successfully.";
+                return RedirectToAction("Details", new { id });
+        }
+    }
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Cancel(int id)
+    {
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var isAdmin = User.IsInRole("Admin");
+
+        var result = await _eventService.CancelEventAsync(id, currentUserId!, isAdmin);
+
+        switch (result)
+        {
+            case EventOperationResult.NotFound:
+                return NotFound();
+            case EventOperationResult.Forbidden:
+                return Forbid();
+            default:
+                TempData["EventMessage"] = "Event cancelled successfully.";
+                return RedirectToAction("Details", new { id });
+        }
+    }
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var isAdmin = User.IsInRole("Admin");
+
+        var result = await _eventService.DeleteEventAsync(id, currentUserId!, isAdmin);
+
+        switch (result)
+        {
+            case EventOperationResult.NotFound:
+                return NotFound();
+            case EventOperationResult.Forbidden:
+                return Forbid();
+            default:
+                TempData["EventMessage"] = "Event deleted successfully.";
+                return RedirectToAction("Index");
+        }
     }
 }
