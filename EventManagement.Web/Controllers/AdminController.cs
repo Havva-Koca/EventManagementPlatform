@@ -1,9 +1,11 @@
-﻿using EventManagement.Data.Model.Enums;
+﻿using EventManagement.Data.Model.Entities;
+using EventManagement.Data.Model.Enums;
 using EventManagement.Data.Repositories.Interfaces;
+using EventManagement.Services.Interfaces;
+using EventManagement.Services.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using EventManagement.Data.Model.Entities;
 
 namespace EventManagement.Web.Controllers;
 
@@ -12,11 +14,13 @@ public class AdminController : Controller
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IOrganizerRequestService _organizerRequestService;
 
-    public AdminController(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager)
+    public AdminController(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IOrganizerRequestService organizerRequestService)
     {
         _unitOfWork = unitOfWork;
         _userManager = userManager;
+        _organizerRequestService = organizerRequestService;
     }
     public async Task<IActionResult> PendingRequests()
     {
@@ -27,25 +31,13 @@ public class AdminController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ApproveRequest(int id)
     {
-        var request = await _unitOfWork.OrganizerRequests.GetByIdAsync(id);
+        var reviewerId = _userManager.GetUserId(User)!;
+        var result = await _organizerRequestService.ApproveRequestAsync(id, reviewerId);
 
-        if (request == null)
+        if (result == OrganizerRequestResult.NotFound)
         {
             return NotFound();
         }
-
-        var user = await _userManager.FindByIdAsync(request.UserId);
-        if (user != null)
-        {
-            await _userManager.AddToRoleAsync(user, "Organizer");
-        }
-
-        request.Status = RequestStatus.Approved;
-        request.ReviewedAt = DateTime.UtcNow;
-        request.ReviewedByUserId = _userManager.GetUserId(User);
-
-        _unitOfWork.OrganizerRequests.Update(request);
-        await _unitOfWork.SaveChangesAsync();
 
         return RedirectToAction("PendingRequests");
     }
@@ -54,19 +46,13 @@ public class AdminController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> RejectRequest(int id)
     {
-        var request = await _unitOfWork.OrganizerRequests.GetByIdAsync(id);
+        var reviewerId = _userManager.GetUserId(User)!;
+        var result = await _organizerRequestService.RejectRequestAsync(id, reviewerId);
 
-        if (request == null)
+        if (result == OrganizerRequestResult.NotFound)
         {
             return NotFound();
         }
-
-        request.Status = RequestStatus.Rejected;
-        request.ReviewedAt = DateTime.UtcNow;
-        request.ReviewedByUserId = _userManager.GetUserId(User);
-
-        _unitOfWork.OrganizerRequests.Update(request);
-        await _unitOfWork.SaveChangesAsync();
 
         return RedirectToAction("PendingRequests");
     }
