@@ -1,0 +1,67 @@
+﻿@model EventListViewModel
+
+@{
+    ViewData["Title"] = "Events";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Upcoming Events</h2>
+
+    @if (User.IsInRole("Organizer") || User.IsInRole("Admin"))
+    {
+        <a asp-action="Create" class="btn btn-primary btn-sm">+ Add Event</a>
+    }
+</div>
+<form method="get" asp-action="Index" class="row g-2 mb-4 align-items-end">
+    <div class="col-auto">
+        <label class="form-label">Category</label>
+        <select asp-for="CategoryId" asp-items="Model.Categories" class="form-control">
+            <option value="">-- All Categories --</option>
+        </select>
+    </div>
+    <div class="col-auto">
+        <label class="form-label">City</label>
+        <input asp-for="City" list="cityList" class="form-control" placeholder="Type a city..." />
+        <datalist id="cityList">
+            @foreach (var c in Model.Cities)
+            {
+                <option value="@c.Value"></option>
+            }
+        </datalist>
+    </div>
+    <div class="col-auto">
+        <label class="form-label">From Date</label>
+        <input asp-for="FromDate" type="date" class="form-control" />
+    </div>
+    <div class="col-auto">
+        <label class="form-label">To Date</label>
+        <input asp-for="ToDate" type="date" class="form-control" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-primary">Filter</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+    </div>
+</form>
+
+@if (!Model.Events.Any())
+{
+    <p>No events available at the moment.</p>
+}
+else
+{
+    <div class="row">
+        @foreach (var ev in Model.Events)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">@ev.Title</h5>
+                        <p class="card-text text-muted mb-1">@ev.Category.Name &middot; @ev.Venue.Name</p>
+                        <p class="card-text">@ev.StartDate.ToString("dd MMM yyyy, HH:mm")</p>
+                        <a asp-action="Details" asp-route-id="@ev.Id" class="btn btn-outline-primary btn-sm">View Details</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

@@ -1,0 +1,76 @@
+﻿@model EventDetailsViewModel
+
+@{
+    ViewData["Title"] = Model.EventItem.Title;
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h2 class="mb-3">@Model.EventItem.Title</h2>
+
+        <div class="card p-4 shadow-sm mb-3">
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Category</dt>
+                <dd class="col-sm-9">@Model.EventItem.Category.Name</dd>
+
+                <dt class="col-sm-3">Venue</dt>
+                <dd class="col-sm-9">@Model.EventItem.Venue.Name, @Model.EventItem.Venue.City</dd>
+
+                <dt class="col-sm-3">Organizer</dt>
+                <dd class="col-sm-9">@Model.EventItem.Organizer.FullName</dd>
+
+                <dt class="col-sm-3">Start</dt>
+                <dd class="col-sm-9">@Model.EventItem.StartDate.ToString("dd MMM yyyy, HH:mm")</dd>
+
+                <dt class="col-sm-3">End</dt>
+                <dd class="col-sm-9">@Model.EventItem.EndDate.ToString("dd MMM yyyy, HH:mm")</dd>
+
+                <dt class="col-sm-3">Capacity</dt>
+                <dd class="col-sm-9">@Model.EventItem.Capacity</dd>
+
+       
+
+                <dt class="col-sm-3">Registered</dt>
+                <dd class="col-sm-9">@Model.ConfirmedCount / @Model.EventItem.Capacity</dd>
+
+            </dl>
+        </div>
+
+
+        <p>@Model.EventItem.Description</p>
+        @if (Model.IsOwnEvent || User.IsInRole("Admin"))
+        {
+            <a asp-action="Edit" asp-route-id="@Model.EventItem.Id" class="btn btn-outline-primary btn-sm mb-2">Edit Event</a>
+        }
+
+        @if (!Model.IsOwnEvent)
+        {
+            if (Model.IsRegistered)
+            {
+                <form asp-controller="Registrations" asp-action="Cancel" method="post" class="d-inline">
+                    <input type="hidden" name="eventId" value="@Model.EventItem.Id" />
+                    <button type="submit" class="btn btn-outline-danger btn-sm">Cancel Registration</button>
+                </form>
+            }
+            else if (Model.IsFull)
+            {
+                <span class="text-muted">This event is full — no longer accepting registrations.</span>
+            }
+            else if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                <form asp-controller="Registrations" asp-action="Register" method="post" class="d-inline">
+                    <input type="hidden" name="eventId" value="@Model.EventItem.Id" />
+                    <button type="submit" class="btn btn-primary btn-sm">Register</button>
+                </form>
+            }
+            else
+            {
+                <a asp-controller="Account" asp-action="Login"
+                   asp-route-returnUrl="@Url.Action("Details", "Events", new { id = Model.EventItem.Id })"
+                   class="btn btn-primary btn-sm">Login to Register</a>
+            }
+        }
+
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Back to Events</a>
+    </div>
+</div>

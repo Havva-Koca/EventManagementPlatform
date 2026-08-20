@@ -19,10 +19,15 @@ public class VenueConfiguration : IEntityTypeConfiguration<Venue>
             .IsRequired()
             .HasMaxLength(100);
 
-        builder.Property(v => v.Address)
+        builder.Property(v => v.Street)
             .IsRequired()
             .HasMaxLength(500);
 
-        
+        builder.Property(v => v.PostalCode)
+            .HasMaxLength(20)
+            .IsRequired(false);
+
+
+
     }
 }

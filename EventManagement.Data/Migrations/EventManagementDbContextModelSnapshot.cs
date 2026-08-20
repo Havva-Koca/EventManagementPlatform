@@ -182,6 +182,38 @@ namespace EventManagement.Data.Migrations
                     b.ToTable("Events");
                 });
 
+            modelBuilder.Entity("EventManagement.Data.Model.Entities.OrganizerRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("RequestedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ReviewedByUserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("OrganizerRequests");
+                });
+
             modelBuilder.Entity("EventManagement.Data.Model.Entities.Registration", b =>
                 {
                     b.Property<int>("Id")
@@ -223,11 +255,6 @@ namespace EventManagement.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
                     b.Property<string>("City")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -243,6 +270,15 @@ namespace EventManagement.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PostalCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Street")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.HasKey("Id");
 
@@ -407,6 +443,17 @@ namespace EventManagement.Data.Migrations
                     b.Navigation("Organizer");
 
                     b.Navigation("Venue");
+                });
+
+            modelBuilder.Entity("EventManagement.Data.Model.Entities.OrganizerRequest", b =>
+                {
+                    b.HasOne("EventManagement.Data.Model.Entities.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("EventManagement.Data.Model.Entities.Registration", b =>

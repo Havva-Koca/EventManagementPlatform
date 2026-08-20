@@ -21,6 +21,43 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
+using(var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    string[] roleNames = ["Admin","Organizer", "Participant"];
+    foreach (var roleName in roleNames)
+    {
+      if(!await roleManager.RoleExistsAsync(roleName))
+        {
+            await roleManager.CreateAsync(new IdentityRole(roleName));
+        }
+    }
+    // Seed the first admin user, if it doesn't already exist.
+    // Email/password are read from configuration (User Secrets locally,
+    // environment variables in production) — never hardcoded.
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+    string? adminEmail = builder.Configuration["AdminSeed:Email"];
+    string? adminPassword = builder.Configuration["AdminSeed:Password"];
+
+    if (!string.IsNullOrEmpty(adminEmail) && !string.IsNullOrEmpty(adminPassword))
+    {
+        var adminUser = await userManager.FindByEmailAsync(adminEmail);
+        if (adminUser == null)
+        {
+            adminUser = new ApplicationUser
+            {
+                FullName = "System Admin",
+                Email = adminEmail,
+                UserName = adminEmail,
+                EmailConfirmed = true
+            };
+
+            await userManager.CreateAsync(adminUser, adminPassword);
+            await userManager.AddToRoleAsync(adminUser, "Admin");
+        }
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -33,14 +70,16 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
-app.UseAuthorization();
+
 app.UseAuthentication();
+app.UseAuthorization();
+
 
 app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
+    pattern: "{controller=Events}/{action=Index}/{id?}")
     .WithStaticAssets();
 
 

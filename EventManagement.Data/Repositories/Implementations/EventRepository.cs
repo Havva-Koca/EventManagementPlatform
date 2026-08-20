@@ -42,7 +42,34 @@ public class EventRepository : GenericRepository<Event>, IEventRepository
     public async Task<IReadOnlyList<Event>> GetPublishedEventsAsync()
     {
         return await _dbSet
+            .Include(e => e.Category)
+            .Include(e => e.Venue)
             .Where(e => e.Status == EventStatus.Published)
             .ToListAsync();
     }
+
+    public async Task<IReadOnlyList<Event>> GetFilteredEventsAsync(int? categoryId, string? city, DateOnly? fromDate, DateOnly? toDate)
+    {
+        var query = _dbSet
+             .Include(e => e.Category)
+             .Include(e => e.Venue)
+             .Where(e => e.Status == EventStatus.Published)
+             .Where(e => e.EndDate >= DateTime.Now);
+
+        if (categoryId.HasValue)
+            query = query.Where(e =>e.CategoryId == categoryId.Value);
+
+        if(!string.IsNullOrWhiteSpace(city))
+            query = query.Where(e => e.Venue.City == city);
+
+        if (fromDate.HasValue)
+            query = query.Where(e => e.StartDate >= fromDate.Value.ToDateTime(TimeOnly.MinValue));
+
+        if (toDate.HasValue)
+            query = query.Where(e => e.StartDate <= toDate.Value.ToDateTime(TimeOnly.MaxValue));
+
+        return await query.ToListAsync();
+    }
+
+    
 }

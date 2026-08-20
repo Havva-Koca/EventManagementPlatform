@@ -19,6 +19,7 @@ public class EventManagementDbContext :IdentityDbContext<ApplicationUser>
     public DbSet<Category> Categories { get; set; }
     public DbSet<Venue> Venues { get; set; }
     public DbSet<Registration> Registrations { get; set; }
+    public DbSet<OrganizerRequest> OrganizerRequests { get; set; }
     protected override void OnModelCreating(ModelBuilder builder)
     {
        
@@ -28,5 +29,6 @@ public class EventManagementDbContext :IdentityDbContext<ApplicationUser>
         builder.ApplyConfiguration(new VenueConfiguration());
         builder.ApplyConfiguration(new EventConfiguration());
         builder.ApplyConfiguration(new RegistrationConfiguration());
+        builder.ApplyConfiguration(new OrganizerRequestConfiguration());
     }
 }
