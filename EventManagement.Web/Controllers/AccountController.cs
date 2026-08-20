@@ -135,6 +135,11 @@ public class AccountController : Controller
         TempData["Message"] = "Your request has been submitted.";
         return RedirectToAction("Index", "Events");
     }
+    [HttpGet]
+    public IActionResult AccessDenied()
+    {
+        return View();
+    }
 
 
 }

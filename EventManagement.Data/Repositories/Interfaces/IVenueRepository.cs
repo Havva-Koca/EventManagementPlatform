@@ -6,4 +6,5 @@ namespace EventManagement.Data.Repositories.Interfaces;
 
 public interface IVenueRepository : IGenericRepository<Venue>
 {
+    Task<IReadOnlyList<string>> GetDistinctCitiesAsync();
 }
