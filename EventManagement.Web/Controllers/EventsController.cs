@@ -1,6 +1,8 @@
-﻿using EventManagement.Data.Model.Entities;
-using EventManagement.Data.Model.Enums;
+﻿using EventManagement.Data.Model.Enums;
 using EventManagement.Data.Repositories.Interfaces;
+using EventManagement.Services.Dtos;
+using EventManagement.Services.Interfaces;
+using EventManagement.Services.Results;
 using EventManagement.Web.Models.EventViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,34 +14,14 @@ namespace EventManagement.Web.Controllers;
 public class EventsController : Controller
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IEventService _eventService;
 
-    public EventsController(IUnitOfWork unitOfWork)
+    public EventsController(IUnitOfWork unitOfWork, IEventService eventService)
     {
         _unitOfWork = unitOfWork;
+        _eventService = eventService;
     }
-    private async Task<Venue> ResolveVenueAsync(string name, string street, string city, string? postalCode)
-    {
-        var existingVenues = await _unitOfWork.Venues.FindAsync(v =>
-            v.Name == name && v.City == city);
 
-        if (existingVenues.Count > 0)
-        {
-            return existingVenues[0];
-        }
-
-        var venue = new Venue
-        {
-            Name = name,
-            Street = street,
-            City = city,
-            PostalCode = postalCode
-        };
-
-        await _unitOfWork.Venues.AddAsync(venue);
-        await _unitOfWork.SaveChangesAsync();
-
-        return venue;
-    }
     public async Task<IActionResult> Index(int? categoryId, string? city, DateOnly? fromDate, DateOnly? toDate)
     {
         var events = await _unitOfWork.Events.GetFilteredEventsAsync(categoryId, city, fromDate, toDate);
@@ -62,6 +44,7 @@ public class EventsController : Controller
         };
         return View(model);
     }
+
     public async Task<IActionResult> Details(int id)
     {
         var eventItem = await _unitOfWork.Events.GetEventWithDetailsAsync(id);
@@ -84,6 +67,7 @@ public class EventsController : Controller
 
         return View(model);
     }
+
     [HttpGet]
     [Authorize(Roles = "Organizer,Admin")]
     public async Task<IActionResult> Create()
@@ -125,6 +109,7 @@ public class EventsController : Controller
 
         return slots;
     }
+
     [HttpPost]
     [Authorize(Roles = "Organizer,Admin")]
     [ValidateAntiForgeryToken]
@@ -150,48 +135,43 @@ public class EventsController : Controller
             return View(model);
         }
 
-       
         var startTime = TimeOnly.Parse(model.StartTime!);
         var endTime = TimeOnly.Parse(model.EndTime!);
 
-        var startDateTime = model.StartDate!.Value.ToDateTime(startTime);
-        var endDateTime = model.EndDate!.Value.ToDateTime(endTime);
-
-        var venue = await ResolveVenueAsync(model.VenueName, model.VenueStreet, model.VenueCity, model.VenuePostalCode);
-
-        var newEvent = new Event
+        var dto = new EventUpsertDto
         {
             Title = model.Title,
             Description = model.Description,
-            StartDate = startDateTime,
-            EndDate = endDateTime,
+            StartDate = model.StartDate!.Value.ToDateTime(startTime),
+            EndDate = model.EndDate!.Value.ToDateTime(endTime),
             Capacity = model.Capacity,
             CategoryId = model.CategoryId,
-            VenueId = venue.Id,
-            OrganizerId = organizerId,
-            Status = EventStatus.Published
+            VenueName = model.VenueName,
+            VenueStreet = model.VenueStreet,
+            VenueCity = model.VenueCity,
+            VenuePostalCode = model.VenuePostalCode
         };
 
-        await _unitOfWork.Events.AddAsync(newEvent);
-        await _unitOfWork.SaveChangesAsync();
+        var newEvent = await _eventService.CreateEventAsync(dto, organizerId);
 
         return RedirectToAction("Details", new { id = newEvent.Id });
     }
+
     [HttpGet]
     [Authorize(Roles = "Organizer,Admin")]
     public async Task<IActionResult> Edit(int id)
     {
-        var eventItem = await _unitOfWork.Events.GetEventWithDetailsAsync(id);
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var isAdmin = User.IsInRole("Admin");
 
-        if (eventItem == null)
+        var (result, eventItem) = await _eventService.GetEditableEventAsync(id, currentUserId!, isAdmin);
+
+        if (result == EventOperationResult.NotFound)
         {
             return NotFound();
         }
 
-        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var isAdmin = User.IsInRole("Admin");
-
-        if (!isAdmin && eventItem.OrganizerId != currentUserId)
+        if (result == EventOperationResult.Forbidden)
         {
             return Forbid();
         }
@@ -200,7 +180,7 @@ public class EventsController : Controller
 
         var model = new EditEventViewModel
         {
-            EventId = eventItem.Id,
+            EventId = eventItem!.Id,
             Title = eventItem.Title,
             Description = eventItem.Description,
             StartDate = DateOnly.FromDateTime(eventItem.StartDate),
@@ -223,7 +203,7 @@ public class EventsController : Controller
 
         return View(model);
     }
- 
+
     [HttpPost]
     [Authorize(Roles = "Organizer,Admin")]
     [ValidateAntiForgeryToken]
@@ -232,21 +212,6 @@ public class EventsController : Controller
         if (id != model.EventId)
         {
             return BadRequest();
-        }
-
-        var eventItem = await _unitOfWork.Events.GetByIdAsync(id);
-
-        if (eventItem == null)
-        {
-            return NotFound();
-        }
-
-        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var isAdmin = User.IsInRole("Admin");
-
-        if (!isAdmin && eventItem.OrganizerId != currentUserId)
-        {
-            return Forbid();
         }
 
         if (!ModelState.IsValid)
@@ -262,26 +227,40 @@ public class EventsController : Controller
             return View(model);
         }
 
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var isAdmin = User.IsInRole("Admin");
+
         var startTime = TimeOnly.Parse(model.StartTime!);
         var endTime = TimeOnly.Parse(model.EndTime!);
 
-        var startDateTime = model.StartDate!.Value.ToDateTime(startTime);
-        var endDateTime = model.EndDate!.Value.ToDateTime(endTime);
+        var dto = new EventUpsertDto
+        {
+            Title = model.Title,
+            Description = model.Description,
+            StartDate = model.StartDate!.Value.ToDateTime(startTime),
+            EndDate = model.EndDate!.Value.ToDateTime(endTime),
+            Capacity = model.Capacity,
+            CategoryId = model.CategoryId,
+            VenueName = model.VenueName,
+            VenueStreet = model.VenueStreet,
+            VenueCity = model.VenueCity,
+            VenuePostalCode = model.VenuePostalCode
+        };
 
-        var venue = await ResolveVenueAsync(model.VenueName, model.VenueStreet, model.VenueCity, model.VenuePostalCode);
+        var result = await _eventService.UpdateEventAsync(id, dto, currentUserId!, isAdmin);
 
-        eventItem.Title = model.Title;
-        eventItem.Description = model.Description;
-        eventItem.StartDate = startDateTime;
-        eventItem.EndDate = endDateTime;
-        eventItem.Capacity = model.Capacity;
-        eventItem.CategoryId = model.CategoryId;
-        eventItem.VenueId = venue.Id;
+        if (result == EventOperationResult.NotFound)
+        {
+            return NotFound();
+        }
 
-        await _unitOfWork.SaveChangesAsync();
-
-        return RedirectToAction("Details", new { id = eventItem.Id });
+        if (result == EventOperationResult.Forbidden)
+        {
+            return Forbid();
+        }
+        
+        TempData["EventMessage"] = "Event updated successfully.";
+ 
+        return RedirectToAction("Details", new { id });
     }
-
-
 }

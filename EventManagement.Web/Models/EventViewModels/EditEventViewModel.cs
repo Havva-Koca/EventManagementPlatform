@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace EventManagement.Web.Models.EventViewModels;
 
-public class EditEventViewModel
+public class EditEventViewModel:IValidatableObject
 {
     public int EventId { get; set; }
 

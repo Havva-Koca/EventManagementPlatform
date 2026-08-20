@@ -1,6 +1,8 @@
 ﻿using EventManagement.Data.Model.Entities;
 using EventManagement.Data.Model.Enums;
 using EventManagement.Data.Repositories.Interfaces;
+using EventManagement.Services.Interfaces;
+using EventManagement.Services.Results;
 using EventManagement.Web.Models.AccountViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -12,16 +14,16 @@ public class AccountController : Controller
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IOrganizerRequestService _organizerRequestService;
 
     public AccountController(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
-        IUnitOfWork unitOfWork)
+        IOrganizerRequestService organizerRequestService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
-        _unitOfWork = unitOfWork;
+        _organizerRequestService = organizerRequestService;
     }
     [HttpGet]
     public IActionResult Register()
@@ -97,7 +99,6 @@ public class AccountController : Controller
         await _signInManager.SignOutAsync();
         return RedirectToAction("Index", "Events");
     }
-
     [HttpPost]
     [Authorize]
     [ValidateAntiForgeryToken]
@@ -110,31 +111,14 @@ public class AccountController : Controller
             return RedirectToAction("Login");
         }
 
-        // Check if the user already has a pending request,
-        // to prevent them from submitting duplicate requests.
-        var existingRequests = await _unitOfWork.OrganizerRequests.GetAllAsync();
-        bool hasPendingRequest = existingRequests.Any(r =>
-            r.UserId == userId && r.Status == RequestStatus.Pending);
+        var result = await _organizerRequestService.SubmitRequestAsync(userId);
 
-        if (hasPendingRequest)
-        {
-            TempData["Message"] = "You already have a pending request.";
-            return RedirectToAction("Index", "Home");
-        }
+        TempData["OrganizerRequestMessage"] = result == OrganizerRequestResult.AlreadyPending
+            ? "You already have a pending request."
+            : "Your request has been submitted.";
 
-        var request = new OrganizerRequest
-        {
-            UserId = userId,
-            RequestedAt = DateTime.UtcNow,
-            Status = RequestStatus.Pending
-        };
-
-        await _unitOfWork.OrganizerRequests.AddAsync(request);
-        await _unitOfWork.SaveChangesAsync();
-
-        TempData["Message"] = "Your request has been submitted.";
-        return RedirectToAction("Index", "Events");
-    }
+        return RedirectToAction("Index", "Profile");
+     }
     [HttpGet]
     public IActionResult AccessDenied()
     {

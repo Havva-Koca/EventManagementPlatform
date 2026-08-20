@@ -60,7 +60,7 @@ public class ProfileController : Controller
 
         if (result.Succeeded)
         {
-            TempData["Message"] = "Your password has been changed successfully.";
+            TempData["ProfileMessage"] = "Your password has been changed successfully.";
             return RedirectToAction("Index");
         }
 

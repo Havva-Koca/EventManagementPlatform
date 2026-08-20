@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="EventManagement.Data/EventManagement.Data.csproj" />
+  <Project Path="EventManagement.Services/EventManagement.Services.csproj" Id="2fa52444-2353-4898-8ba9-6257881334e4" />
   <Project Path="EventManagement.Web/EventManagement.Web.csproj" />
 </Solution>
