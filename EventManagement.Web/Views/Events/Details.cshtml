@@ -54,6 +54,26 @@
         {
             <a asp-action="Edit" asp-route-id="@Model.EventItem.Id" class="btn btn-outline-primary btn-sm mb-2">Edit Event</a>
         }
+        @if (Model.EventItem.Status == EventStatus.Draft && (Model.IsOwnEvent || User.IsInRole("Admin")))
+        {
+            <form asp-action="Publish" asp-route-id="@Model.EventItem.Id" method="post" style="display:inline;">
+                <button type="submit" class="btn btn-success btn-sm mb-2">Publish Event</button>
+            </form>
+        }
+        @if (Model.EventItem.Status == EventStatus.Draft && (Model.IsOwnEvent || User.IsInRole("Admin")))
+{
+    <form asp-action="Delete" asp-route-id="@Model.EventItem.Id" method="post" style="display:inline;"
+          onsubmit="return confirm('Are you sure you want to permanently delete this event? This cannot be undone.');">
+        <button type="submit" class="btn btn-danger btn-sm mb-2">Delete Event</button>
+    </form>
+}
+        @if (Model.EventItem.Status == EventStatus.Published && (Model.IsOwnEvent || User.IsInRole("Admin")))
+        {
+            <form asp-action="Cancel" asp-route-id="@Model.EventItem.Id" method="post" style="display:inline;"
+                  onsubmit="return confirm('Are you sure you want to cancel this event?');">
+                <button type="submit" class="btn btn-danger btn-sm mb-2">Cancel Event</button>
+            </form>
+        }
 
         @if (!Model.IsOwnEvent)
         {
@@ -83,6 +103,6 @@
             }
         }
 
-        <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Back to Events</a>
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm mb-2">Back to Events</a>
     </div>
 </div>

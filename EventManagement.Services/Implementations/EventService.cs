@@ -30,7 +30,7 @@ public class EventService : IEventService
             CategoryId = dto.CategoryId,
             VenueId = venue.Id,
             OrganizerId = organizerId,
-            Status = EventStatus.Published
+            Status = EventStatus.Draft
         };
 
         await _unitOfWork.Events.AddAsync(newEvent);
@@ -108,5 +108,53 @@ public class EventService : IEventService
         }
 
         return (EventOperationResult.Success, eventItem);
+    }
+    public async Task<EventOperationResult> PublishEventAsync(int eventId, string currentUserId, bool isAdmin)
+    {
+        var eventItem = await _unitOfWork.Events.GetByIdAsync(eventId);
+        if (eventItem == null) return EventOperationResult.NotFound;
+
+        if (!isAdmin && eventItem.OrganizerId != currentUserId)
+            return EventOperationResult.Forbidden;
+
+        if (eventItem.Status != EventStatus.Draft)
+            return EventOperationResult.Success; 
+
+        eventItem.Status = EventStatus.Published;
+        await _unitOfWork.SaveChangesAsync();
+
+        return EventOperationResult.Success;
+    }
+    public async Task<EventOperationResult> CancelEventAsync(int eventId, string currentUserId, bool isAdmin)
+    {
+        var eventItem = await _unitOfWork.Events.GetByIdAsync(eventId);
+        if (eventItem == null) return EventOperationResult.NotFound;
+
+        if (!isAdmin && eventItem.OrganizerId != currentUserId)
+            return EventOperationResult.Forbidden;
+
+        if (eventItem.Status != EventStatus.Published)
+            return EventOperationResult.Success; 
+
+        eventItem.Status = EventStatus.Cancelled;
+        await _unitOfWork.SaveChangesAsync();
+
+        return EventOperationResult.Success;
+    }
+    public async Task<EventOperationResult> DeleteEventAsync(int eventId, string currentUserId, bool isAdmin)
+    {
+        var eventItem = await _unitOfWork.Events.GetByIdAsync(eventId);
+        if (eventItem == null) return EventOperationResult.NotFound;
+
+        if (!isAdmin && eventItem.OrganizerId != currentUserId)
+            return EventOperationResult.Forbidden;
+
+        if (eventItem.Status != EventStatus.Draft)
+            return EventOperationResult.Forbidden;
+
+        _unitOfWork.Events.Delete(eventItem);
+        await _unitOfWork.SaveChangesAsync();
+
+        return EventOperationResult.Success;
     }
 }
