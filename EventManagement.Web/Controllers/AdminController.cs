@@ -63,11 +63,12 @@ public class AdminController : Controller
     {
         return View();
     }
-    [Authorize(Roles = "Admin")]
+    private const int PageSize = 6;
+
     [HttpGet]
-    public async Task<IActionResult> Events()
+    public async Task<IActionResult> Events(int page = 1)
     {
-        var events = await _eventService.GetAllEventsForAdminAsync();
+        var events = await _eventService.GetAllEventsForAdminAsync(page, PageSize);
         return View(events);
     }
 }

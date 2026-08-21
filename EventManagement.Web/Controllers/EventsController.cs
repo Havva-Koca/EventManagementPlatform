@@ -25,12 +25,13 @@ public class EventsController : Controller
        
     }
 
-    public async Task<IActionResult> Index(int? categoryId, string? city, DateOnly? fromDate, DateOnly? toDate)
+    private const int PageSize = 6;
+
+    public async Task<IActionResult> Index(int? categoryId, string? city, DateOnly? fromDate, DateOnly? toDate, int page = 1)
     {
-        var events = await _unitOfWork.Events.GetFilteredEventsAsync(categoryId, city, fromDate, toDate);
+        var events = await _eventService.GetFilteredEventsAsync(categoryId, city, fromDate, toDate, page, PageSize);
         var categories = await _unitOfWork.Categories.GetAllAsync();
         var cities = await _unitOfWork.Venues.GetDistinctCitiesAsync();
-
         var model = new EventListViewModel
         {
             Events = events,
@@ -273,9 +274,15 @@ public class EventsController : Controller
  
         return RedirectToAction("Details", new { id });
     }
+    private IActionResult RedirectAfterAction(string? returnTo)
+    {
+        return returnTo == "Admin"
+            ? RedirectToAction("Events", "Admin")
+            : RedirectToAction("Index", "MyEvents");
+    }
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Publish(int id)
+    public async Task<IActionResult> Publish(int id, string? returnTo)
     {
         var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var isAdmin = User.IsInRole("Admin");
@@ -290,12 +297,12 @@ public class EventsController : Controller
                 return Forbid();
             default:
                 TempData["EventMessage"] = "Event published successfully.";
-                return RedirectToAction("Index", "MyEvents");
+                return RedirectAfterAction(returnTo);
         }
     }
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Cancel(int id)
+    public async Task<IActionResult> Cancel(int id, string? returnTo)
     {
         var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var isAdmin = User.IsInRole("Admin");
@@ -310,12 +317,12 @@ public class EventsController : Controller
                 return Forbid();
             default:
                 TempData["EventMessage"] = "Event cancelled successfully.";
-                return RedirectToAction("Index", "MyEvents");
+                return RedirectAfterAction(returnTo);
         }
     }
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> Delete(int id, string? returnTo)
     {
         var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var isAdmin = User.IsInRole("Admin");
@@ -330,7 +337,7 @@ public class EventsController : Controller
                 return Forbid();
             default:
                 TempData["EventMessage"] = "Event deleted successfully.";
-                return RedirectToAction("Index", "MyEvents");
+                return RedirectAfterAction(returnTo);
         }
     }
    

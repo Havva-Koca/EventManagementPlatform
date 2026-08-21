@@ -1,10 +1,11 @@
-﻿using EventManagement.Data.Model.Entities;
+﻿using EventManagement.Data.Common;
+using EventManagement.Data.Model.Entities;
+using EventManagement.Data.Model.Enums;
 using EventManagement.Data.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using EventManagement.Data.Model.Enums;
-using Microsoft.EntityFrameworkCore;
 
 namespace EventManagement.Data.Repositories.Implementations;
 
@@ -37,7 +38,9 @@ public class EventRepository : GenericRepository<Event>, IEventRepository
             .ToListAsync();
     }
 
-    public async Task<IReadOnlyList<Event>> GetFilteredEventsAsync(int? categoryId, string? city, DateOnly? fromDate, DateOnly? toDate)
+    public async Task<PagedResult<Event>> GetFilteredEventsAsync(
+        int? categoryId, string? city, DateOnly? fromDate, DateOnly? toDate,
+        int pageNumber, int pageSize)
     {
         var query = _dbSet
              .Include(e => e.Category)
@@ -46,9 +49,9 @@ public class EventRepository : GenericRepository<Event>, IEventRepository
              .Where(e => e.EndDate >= DateTime.Now);
 
         if (categoryId.HasValue)
-            query = query.Where(e =>e.CategoryId == categoryId.Value);
+            query = query.Where(e => e.CategoryId == categoryId.Value);
 
-        if(!string.IsNullOrWhiteSpace(city))
+        if (!string.IsNullOrWhiteSpace(city))
             query = query.Where(e => e.Venue.City == city);
 
         if (fromDate.HasValue)
@@ -57,26 +60,69 @@ public class EventRepository : GenericRepository<Event>, IEventRepository
         if (toDate.HasValue)
             query = query.Where(e => e.StartDate <= toDate.Value.ToDateTime(TimeOnly.MaxValue));
 
-        return await query.ToListAsync();
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PagedResult<Event>
+        {
+            Items = items,
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            TotalCount = totalCount
+        };
     }
 
-    public async Task<List<Event>> GetByOrganizerIdAsync(string organizerId)
+    public async Task<PagedResult<Event>> GetByOrganizerIdAsync(string organizerId, int pageNumber, int pageSize)
     {
-        return await _dbSet
-         .Include(e => e.Category)
-         .Include(e => e.Venue)
-         .Where(e => e.OrganizerId == organizerId)
-         .OrderByDescending(e => e.CreatedAt)
-         .ToListAsync();
+        var query = _dbSet
+            .Include(e => e.Category)
+            .Include(e => e.Venue)
+            .Where(e => e.OrganizerId == organizerId)
+            .OrderByDescending(e => e.CreatedAt);
+
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PagedResult<Event>
+        {
+            Items = items,
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            TotalCount = totalCount
+        };
     }
-    public async Task<List<Event>> GetAllEventsWithDetailsAsync()
+    public async Task<PagedResult<Event>> GetAllEventsWithDetailsAsync(int pageNumber, int pageSize)
     {
-        return await _dbSet
+        var query = _dbSet
             .Include(e => e.Category)
             .Include(e => e.Venue)
             .Include(e => e.Organizer)
             .Include(e => e.Registrations)
-            .OrderByDescending(e => e.CreatedAt)
+            .OrderByDescending(e => e.CreatedAt);
+
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
+
+        return new PagedResult<Event>
+        {
+            Items = items,
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            TotalCount = totalCount
+        };
     }
+
+
 }

@@ -1,4 +1,5 @@
-﻿using EventManagement.Data.Model.Entities;
+﻿using EventManagement.Data.Common;
+using EventManagement.Data.Model.Entities;
 using EventManagement.Data.Model.Enums;
 using EventManagement.Data.Repositories.Interfaces;
 using EventManagement.Services.Interfaces;
@@ -77,8 +78,8 @@ public class RegistrationService : IRegistrationService
 
         return RegistrationResult.Success;
     }
-    public async Task<List<Registration>> GetMyRegistrationsAsync(string userId)
+    public async Task<PagedResult<Registration>> GetMyRegistrationsAsync(string userId, int pageNumber, int pageSize)
     {
-        return await _unitOfWork.Registrations.GetByUserIdAsync(userId);
+        return await _unitOfWork.Registrations.GetByUserIdAsync(userId, pageNumber, pageSize);
     }
 }

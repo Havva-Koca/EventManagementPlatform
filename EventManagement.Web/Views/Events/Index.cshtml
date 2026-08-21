@@ -45,14 +45,14 @@
     </div>
 </form>
 
-@if (!Model.Events.Any())
+    @if (!Model.Events.Items.Any())
 {
     <p>No events available at the moment.</p>
 }
 else
 {
     <div class="row">
-        @foreach (var ev in Model.Events)
+        @foreach (var ev in Model.Events.Items)
         {
             <div class="col-md-4 mb-4">
                 <div class="card h-100 shadow-sm">
@@ -66,4 +66,24 @@ else
             </div>
         }
     </div>
+}
+
+@if (Model.Events.TotalPages > 1)
+{
+    <nav aria-label="Event pages">
+        <ul class="pagination justify-content-center">
+            @for (int i = 1; i <= Model.Events.TotalPages; i++)
+            {
+                <li class="page-item @(i == Model.Events.PageNumber ? "active" : "")">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-categoryId="@Model.CategoryId"
+                       asp-route-city="@Model.City"
+                       asp-route-fromDate="@Model.FromDate"
+                       asp-route-toDate="@Model.ToDate"
+                       asp-route-page="@i">@i</a>
+                </li>
+            }
+        </ul>
+    </nav>
 }

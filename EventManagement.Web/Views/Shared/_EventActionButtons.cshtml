@@ -4,10 +4,12 @@
 {
     <a asp-controller="Events" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-primary mb-2">Edit</a>
     <form asp-controller="Events" asp-action="Publish" asp-route-id="@Model.Id" method="post" class="d-inline">
+        <input type="hidden" name="returnTo" value="@ViewData["ReturnTo"]" />
         <button type="submit" class="btn btn-sm btn-success mb-2">Publish</button>
     </form>
     <form asp-controller="Events" asp-action="Delete" asp-route-id="@Model.Id" method="post" class="d-inline"
           onsubmit="return confirm('This event will be deleted. Are you sure?');">
+        <input type="hidden" name="returnTo" value="@ViewData["ReturnTo"]" />
         <button type="submit" class="btn btn-sm btn-danger mb-2">Delete</button>
     </form>
 }
@@ -16,6 +18,7 @@ else if (Model.Status == EventStatus.Published)
     <a asp-controller="Events" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-primary mb-2">Edit</a>
     <form asp-controller="Events" asp-action="Cancel" asp-route-id="@Model.Id" method="post" class="d-inline"
           onsubmit="return confirm('This event will be cancelled. Are you sure?');">
+        <input type="hidden" name="returnTo" value="@ViewData["ReturnTo"]" />
         <button type="submit" class="btn btn-sm btn-warning mb-2">Cancel</button>
     </form>
 }
