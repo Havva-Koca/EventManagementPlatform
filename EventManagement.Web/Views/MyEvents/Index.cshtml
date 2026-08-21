@@ -1,0 +1,86 @@
+﻿@model MyEventsViewModel
+
+<h2>My Events</h2>
+@if (TempData["EventMessage"] != null)
+{
+
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["EventMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<ul class="nav nav-tabs mb-3" id="myEventsTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="organized-tab" data-bs-toggle="tab"
+                data-bs-target="#organized" type="button" role="tab">
+            Organized by Me  (@Model.OrganizedEvents.Count)
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="registered-tab" data-bs-toggle="tab"
+                data-bs-target="#registered" type="button" role="tab">
+            Registered Events (@Model.RegisteredEvents.Count)
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="myEventsTabsContent">
+
+    <div class="tab-pane fade show active" id="organized" role="tabpanel">
+        @if (!Model.OrganizedEvents.Any())
+        {
+            <p class="text-muted">You haven't organized any events yet.</p>
+        }
+        else
+        {
+            foreach (var ev in Model.OrganizedEvents)
+            {
+                <div class="card mb-2">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <a asp-controller="Events" asp-action="Details" asp-route-id="@ev.Id">@ev.Title</a>
+                            <span class="badge bg-secondary ms-2">@ev.Status</span>
+                            <div class="text-muted small">@ev.StartDate.ToString("dd.MM.yyyy HH:mm") — @ev.Venue.Name</div>
+                        </div>
+                        <div>
+                            <partial name="_EventActionButtons" model="ev" />
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+
+    <div class="tab-pane fade" id="registered" role="tabpanel">
+        @if (!Model.RegisteredEvents.Any())
+        {
+            <p class="text-muted">You haven't registered for any events yet.</p>
+        }
+        else
+        {
+            foreach (var reg in Model.RegisteredEvents)
+            {
+                <div class="card mb-2">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <a asp-controller="Events" asp-action="Details" asp-route-id="@reg.Event.Id">@reg.Event.Title</a>
+                            <span class="badge bg-secondary ms-2">@reg.Status</span>
+                            <div class="text-muted small">@reg.Event.StartDate.ToString("dd.MM.yyyy HH:mm") — @reg.Event.Venue.Name</div>
+                        </div>
+                        <div>
+                            @if (reg.Status == RegistrationStatus.Confirmed)
+                            {
+                                <form asp-controller="Registrations" asp-action="Cancel" method="post" class="d-inline">
+                                    <input type="hidden" name="eventId" value="@reg.Event.Id" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger mb-2">Cancel Registration</button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+
+</div>

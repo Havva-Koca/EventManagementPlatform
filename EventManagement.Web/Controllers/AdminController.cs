@@ -1,6 +1,7 @@
 ﻿using EventManagement.Data.Model.Entities;
 using EventManagement.Data.Model.Enums;
 using EventManagement.Data.Repositories.Interfaces;
+using EventManagement.Services.Implementations;
 using EventManagement.Services.Interfaces;
 using EventManagement.Services.Results;
 using Microsoft.AspNetCore.Authorization;
@@ -15,12 +16,14 @@ public class AdminController : Controller
     private readonly IUnitOfWork _unitOfWork;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IOrganizerRequestService _organizerRequestService;
+    private readonly IEventService _eventService;
 
-    public AdminController(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IOrganizerRequestService organizerRequestService)
+    public AdminController(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IOrganizerRequestService organizerRequestService, IEventService eventService)
     {
         _unitOfWork = unitOfWork;
         _userManager = userManager;
         _organizerRequestService = organizerRequestService;
+        _eventService = eventService;
     }
     public async Task<IActionResult> PendingRequests()
     {
@@ -59,5 +62,12 @@ public class AdminController : Controller
     public IActionResult Index()
     {
         return View();
+    }
+    [Authorize(Roles = "Admin")]
+    [HttpGet]
+    public async Task<IActionResult> Events()
+    {
+        var events = await _eventService.GetAllEventsForAdminAsync();
+        return View(events);
     }
 }

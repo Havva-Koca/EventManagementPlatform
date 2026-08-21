@@ -157,4 +157,12 @@ public class EventService : IEventService
 
         return EventOperationResult.Success;
     }
+    public async Task<List<Event>> GetMyOrganizedEventsAsync(string organizerId)
+    {
+        return await _unitOfWork.Events.GetByOrganizerIdAsync(organizerId);
+    }
+    public async Task<List<Event>> GetAllEventsForAdminAsync()
+    {
+        return await _unitOfWork.Events.GetAllEventsWithDetailsAsync();
+    }
 }

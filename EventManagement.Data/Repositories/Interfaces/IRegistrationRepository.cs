@@ -10,4 +10,5 @@ public interface IRegistrationRepository :IGenericRepository<Registration>
     Task<Registration?>GetByEventAndUserAsync(int eventId, string userId);
    
     Task<int> GetConfirmedCountAsync(int eventId);
+    Task<List<Registration>> GetByUserIdAsync(string userId);
 }

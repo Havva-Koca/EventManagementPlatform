@@ -1,6 +1,7 @@
 ﻿using EventManagement.Data.Model.Enums;
 using EventManagement.Data.Repositories.Interfaces;
 using EventManagement.Services.Dtos;
+using EventManagement.Services.Implementations;
 using EventManagement.Services.Interfaces;
 using EventManagement.Services.Results;
 using EventManagement.Web.Models.EventViewModels;
@@ -15,11 +16,13 @@ public class EventsController : Controller
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEventService _eventService;
+   
 
     public EventsController(IUnitOfWork unitOfWork, IEventService eventService)
     {
         _unitOfWork = unitOfWork;
         _eventService = eventService;
+       
     }
 
     public async Task<IActionResult> Index(int? categoryId, string? city, DateOnly? fromDate, DateOnly? toDate)
@@ -287,7 +290,7 @@ public class EventsController : Controller
                 return Forbid();
             default:
                 TempData["EventMessage"] = "Event published successfully.";
-                return RedirectToAction("Details", new { id });
+                return RedirectToAction("Index", "MyEvents");
         }
     }
     [HttpPost]
@@ -307,7 +310,7 @@ public class EventsController : Controller
                 return Forbid();
             default:
                 TempData["EventMessage"] = "Event cancelled successfully.";
-                return RedirectToAction("Details", new { id });
+                return RedirectToAction("Index", "MyEvents");
         }
     }
     [HttpPost]
@@ -327,7 +330,8 @@ public class EventsController : Controller
                 return Forbid();
             default:
                 TempData["EventMessage"] = "Event deleted successfully.";
-                return RedirectToAction("Index");
+                return RedirectToAction("Index", "MyEvents");
         }
     }
+   
 }

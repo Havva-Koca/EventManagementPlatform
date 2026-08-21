@@ -77,4 +77,8 @@ public class RegistrationService : IRegistrationService
 
         return RegistrationResult.Success;
     }
+    public async Task<List<Registration>> GetMyRegistrationsAsync(string userId)
+    {
+        return await _unitOfWork.Registrations.GetByUserIdAsync(userId);
+    }
 }
