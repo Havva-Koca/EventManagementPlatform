@@ -1,4 +1,5 @@
-﻿using EventManagement.Data.Model.Entities;
+﻿using EventManagement.Data.Common;
+using EventManagement.Data.Model.Entities;
 using EventManagement.Data.Model.Enums;
 using EventManagement.Data.Repositories.Interfaces;
 using EventManagement.Services.Dtos;
@@ -157,12 +158,18 @@ public class EventService : IEventService
 
         return EventOperationResult.Success;
     }
-    public async Task<List<Event>> GetMyOrganizedEventsAsync(string organizerId)
+    public async Task<PagedResult<Event>> GetMyOrganizedEventsAsync(string organizerId, int pageNumber, int pageSize)
     {
-        return await _unitOfWork.Events.GetByOrganizerIdAsync(organizerId);
+        return await _unitOfWork.Events.GetByOrganizerIdAsync(organizerId, pageNumber, pageSize);
     }
-    public async Task<List<Event>> GetAllEventsForAdminAsync()
+    public async Task<PagedResult<Event>> GetAllEventsForAdminAsync(int pageNumber, int pageSize)
     {
-        return await _unitOfWork.Events.GetAllEventsWithDetailsAsync();
+        return await _unitOfWork.Events.GetAllEventsWithDetailsAsync(pageNumber, pageSize);
+    }
+    public async Task<PagedResult<Event>> GetFilteredEventsAsync(
+    int? categoryId, string? city, DateOnly? fromDate, DateOnly? toDate,
+    int pageNumber, int pageSize)
+    {
+        return await _unitOfWork.Events.GetFilteredEventsAsync(categoryId, city, fromDate, toDate, pageNumber, pageSize);
     }
 }

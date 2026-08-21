@@ -1,9 +1,11 @@
-﻿using EventManagement.Data.Model.Entities;
+﻿using EventManagement.Data.Common;
+using EventManagement.Data.Model.Entities;
 
 namespace EventManagement.Web.Models.EventViewModels;
 
 public class MyEventsViewModel
 {
-    public List<Event> OrganizedEvents { get; set; } = [];
-    public List<Registration> RegisteredEvents { get; set; } = [];
+    public PagedResult<Event> OrganizedEvents { get; set; } = new();
+    public PagedResult<Registration> RegisteredEvents { get; set; } = new();
+    public string ActiveTab { get; set; } = "organized";
 }

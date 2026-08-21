@@ -17,16 +17,19 @@ public class MyEventsController : Controller
         _registrationService = registrationService;
     }
 
+    private const int PageSize = 6;
+
     [Authorize]
     [HttpGet]
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(int orgPage = 1, int regPage = 1, string tab = "organized")
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         var viewModel = new MyEventsViewModel
         {
-            OrganizedEvents = await _eventService.GetMyOrganizedEventsAsync(userId),
-            RegisteredEvents = await _registrationService.GetMyRegistrationsAsync(userId)
+            OrganizedEvents = await _eventService.GetMyOrganizedEventsAsync(userId, orgPage, PageSize),
+            RegisteredEvents = await _registrationService.GetMyRegistrationsAsync(userId, regPage, PageSize),
+            ActiveTab = tab
         };
 
         return View(viewModel);

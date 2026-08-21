@@ -1,14 +1,14 @@
-﻿@model List<Event>
+﻿@model PagedResult<Event>
 
 <h2>All Events (Admin)</h2>
 
-@if (!Model.Any())
+@if (!Model.Items.Any())
 {
     <p class="text-muted">No events found.</p>
 }
 else
 {
-    foreach (var ev in Model)
+    foreach (var ev in Model.Items)
     {
         var confirmedCount = ev.Registrations.Count(r => r.Status == RegistrationStatus.Confirmed);
 
@@ -22,9 +22,23 @@ else
                     </div>
                 </div>
                 <div>
-                    <partial name="_EventActionButtons" model="ev" />
+                   <partial name="_EventActionButtons" model="ev" view-data='@(new ViewDataDictionary(ViewData) { { "ReturnTo", "Admin" } })' />
                 </div>
             </div>
         </div>
+    }
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav>
+            <ul class="pagination">
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                        <a class="page-link" asp-action="Events" asp-route-page="@i">@i</a>
+                    </li>
+                }
+            </ul>
+        </nav>
     }
 }
