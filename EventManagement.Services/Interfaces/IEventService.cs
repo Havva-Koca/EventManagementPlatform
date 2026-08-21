@@ -17,6 +17,9 @@ public interface IEventService
     Task<EventOperationResult> PublishEventAsync(int eventId, string currentUserId, bool isAdmin);
     Task<EventOperationResult> CancelEventAsync(int eventId, string currentUserId, bool isAdmin);
     Task<EventOperationResult> DeleteEventAsync(int eventId, string currentUserId, bool isAdmin);
+    Task<List<Event>> GetMyOrganizedEventsAsync(string organizerId);
+
+    Task<List<Event>> GetAllEventsForAdminAsync();
 
 
 }

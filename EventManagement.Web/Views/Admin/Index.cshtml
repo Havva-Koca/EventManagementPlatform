@@ -9,9 +9,11 @@
         <div class="card p-3 shadow-sm h-100">
             <h5>Organizer Requests</h5>
             <p class="text-muted">Review and approve pending organizer role requests.</p>
-            <a asp-action="PendingRequests" class="btn btn-primary btn-sm">View Requests</a>
+         
+            <a asp-controller="Admin" asp-action="PendingRequests" class="btn btn-primary btn-sm">View Requests</a>
         </div>
     </div>
+ 
 
     <div class="col-md-4">
         <div class="card p-3 shadow-sm h-100">
@@ -20,4 +22,13 @@
             <a asp-controller="Categories" asp-action="Index" class="btn btn-primary btn-sm">Manage Categories</a>
         </div>
     </div>
+
+    <div class="col-md-4">
+        <div class="card p-3 shadow-sm h-100">
+            <h5>Events</h5>
+            <p class="text-muted">Manage Events</p>
+            <a asp-controller="Admin" asp-action="Events" class="btn btn-primary btn-sm">Manage Events</a>
+        </div>
+    </div>
 </div>
+

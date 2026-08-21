@@ -23,4 +23,15 @@ public class RegistrationRepository :GenericRepository<Registration>, IRegistrat
         return await _dbSet.CountAsync(r =>
        r.EventId == eventId && r.Status == RegistrationStatus.Confirmed);
     }
+    public async Task<List<Registration>> GetByUserIdAsync(string userId)
+    {
+        return await _dbSet
+            .Include(r => r.Event)
+                .ThenInclude(e => e.Category)
+            .Include(r => r.Event)
+                .ThenInclude(e => e.Venue)
+            .Where(r => r.UserId == userId)
+            .OrderBy(r => r.Event.StartDate)
+            .ToListAsync();
+    }
 }

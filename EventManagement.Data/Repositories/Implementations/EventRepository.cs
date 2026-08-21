@@ -14,13 +14,7 @@ public class EventRepository : GenericRepository<Event>, IEventRepository
     {
     }
 
-    public async Task<IReadOnlyList<Event>> GetEventsByUserAsync(string userId)
-    {
-        return await _context.Registrations
-            .Where(r => r.UserId == userId)
-            .Select(r => r.Event)
-            .ToListAsync();
-    }
+ 
 
     public async Task<Event?> GetEventWithDetailsAsync(int id)
     {
@@ -32,12 +26,7 @@ public class EventRepository : GenericRepository<Event>, IEventRepository
             .FirstOrDefaultAsync(e => e.Id == id);
     }
 
-    public async Task<IReadOnlyList<Event>> GetOrganizedEventsByUserAsync(string userId)
-    {
-        return await _dbSet
-            .Where(e => e.OrganizerId == userId)
-            .ToListAsync();
-    }
+ 
 
     public async Task<IReadOnlyList<Event>> GetPublishedEventsAsync()
     {
@@ -71,5 +60,23 @@ public class EventRepository : GenericRepository<Event>, IEventRepository
         return await query.ToListAsync();
     }
 
-    
+    public async Task<List<Event>> GetByOrganizerIdAsync(string organizerId)
+    {
+        return await _dbSet
+         .Include(e => e.Category)
+         .Include(e => e.Venue)
+         .Where(e => e.OrganizerId == organizerId)
+         .OrderByDescending(e => e.CreatedAt)
+         .ToListAsync();
+    }
+    public async Task<List<Event>> GetAllEventsWithDetailsAsync()
+    {
+        return await _dbSet
+            .Include(e => e.Category)
+            .Include(e => e.Venue)
+            .Include(e => e.Organizer)
+            .Include(e => e.Registrations)
+            .OrderByDescending(e => e.CreatedAt)
+            .ToListAsync();
+    }
 }
