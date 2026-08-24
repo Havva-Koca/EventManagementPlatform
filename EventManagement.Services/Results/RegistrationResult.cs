@@ -11,5 +11,6 @@ public enum RegistrationResult
     OwnByOrganizer,
     AlreadyRegistered,
     EventFull,
+    Waitlisted,
     RegistrationNotFound
 }
