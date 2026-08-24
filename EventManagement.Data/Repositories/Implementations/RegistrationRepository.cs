@@ -48,4 +48,12 @@ public class RegistrationRepository :GenericRepository<Registration>, IRegistrat
             TotalCount = totalCount
         };
     }
+
+    public Task<Registration?> GetOldestWaitlistedAsync(int eventId)
+    {
+        var query = _dbSet
+            .Where(r => r.EventId == eventId && r.Status == RegistrationStatus.Waitlisted)
+            .OrderBy(r => r.RegisteredAt);
+        return query.FirstOrDefaultAsync();
+    }
 }

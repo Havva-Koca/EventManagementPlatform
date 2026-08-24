@@ -6,8 +6,10 @@ public class EventDetailsViewModel
 {
     public Event EventItem { get; set; } = null!;
     public bool IsRegistered { get; set; }
+    public bool IsWaitlisted { get; set; }
     public bool IsFull { get; set; }
     public bool IsOwnEvent { get; set; }
     public int ConfirmedCount { get; set; }
+  
 
 }

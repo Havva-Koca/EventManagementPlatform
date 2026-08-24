@@ -31,20 +31,18 @@ public class RegistrationService : IRegistrationService
 
         var existingRegistration = await _unitOfWork.Registrations.GetByEventAndUserAsync(eventId, userId);
 
-        if (existingRegistration != null && existingRegistration.Status == RegistrationStatus.Confirmed)
+        if (existingRegistration != null && existingRegistration.Status != RegistrationStatus.Cancelled)
         {
             return RegistrationResult.AlreadyRegistered;
         }
 
         var confirmedCount = await _unitOfWork.Registrations.GetConfirmedCountAsync(eventId);
-        if (confirmedCount >= eventItem.Capacity)
-        {
-            return RegistrationResult.EventFull;
-        }
+        var isFull = confirmedCount >= eventItem.Capacity;
+        var newStatus = isFull ? RegistrationStatus.Waitlisted : RegistrationStatus.Confirmed;
 
         if (existingRegistration != null)
         {
-            existingRegistration.Status = RegistrationStatus.Confirmed;
+            existingRegistration.Status = newStatus;
             _unitOfWork.Registrations.Update(existingRegistration);
         }
         else
@@ -53,27 +51,39 @@ public class RegistrationService : IRegistrationService
             {
                 EventId = eventId,
                 UserId = userId,
-                Status = RegistrationStatus.Confirmed
+                Status = newStatus
             };
             await _unitOfWork.Registrations.AddAsync(registration);
         }
 
         await _unitOfWork.SaveChangesAsync();
 
-        return RegistrationResult.Success;
+        return isFull ? RegistrationResult.Waitlisted : RegistrationResult.Success;
     }
 
     public async Task<RegistrationResult> CancelAsync(int eventId, string userId)
     {
         var registration = await _unitOfWork.Registrations.GetByEventAndUserAsync(eventId, userId);
 
-        if (registration == null || registration.Status != RegistrationStatus.Confirmed)
+        if (registration == null || registration.Status != RegistrationStatus.Confirmed && registration.Status != RegistrationStatus.Waitlisted)
         {
             return RegistrationResult.RegistrationNotFound;
         }
 
+        var wasConfirmed = registration.Status == RegistrationStatus.Confirmed;
         registration.Status = RegistrationStatus.Cancelled;
         _unitOfWork.Registrations.Update(registration);
+
+      
+        if (wasConfirmed)
+        {
+            var nextInLine = await _unitOfWork.Registrations.GetOldestWaitlistedAsync(eventId);
+            if (nextInLine != null)
+            {
+                nextInLine.Status = RegistrationStatus.Confirmed;
+                _unitOfWork.Registrations.Update(nextInLine);
+            }
+        }
         await _unitOfWork.SaveChangesAsync();
 
         return RegistrationResult.Success;

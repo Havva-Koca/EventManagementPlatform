@@ -12,4 +12,5 @@ public interface IRegistrationRepository :IGenericRepository<Registration>
    
     Task<int> GetConfirmedCountAsync(int eventId);
     Task<PagedResult<Registration>> GetByUserIdAsync(string userId, int pageNumber, int pageSize);
+    Task<Registration?> GetOldestWaitlistedAsync(int eventId);
 }

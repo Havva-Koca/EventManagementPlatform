@@ -72,6 +72,8 @@ public class EventsController : Controller
             IsOwnEvent = eventItem.OrganizerId == currentUserId,
             IsRegistered = eventItem.Registrations.Any(r =>
                 r.UserId == currentUserId && r.Status == RegistrationStatus.Confirmed),
+            IsWaitlisted = eventItem.Registrations.Any(r =>
+       r.UserId == currentUserId && r.Status == RegistrationStatus.Waitlisted),
             IsFull = confirmedCount >= eventItem.Capacity,
             ConfirmedCount = confirmedCount
         };

@@ -84,9 +84,28 @@
                     <button type="submit" class="btn btn-outline-danger btn-sm">Cancel Registration</button>
                 </form>
             }
+            else if (Model.IsWaitlisted)
+            {
+                <form asp-controller="Registrations" asp-action="Cancel" method="post" class="d-inline">
+                    <input type="hidden" name="eventId" value="@Model.EventItem.Id" />
+                    <button type="submit" class="btn btn-outline-warning btn-sm">Leave Waitlist</button>
+                </form>
+            }
             else if (Model.IsFull)
             {
-                <span class="text-muted">This event is full — no longer accepting registrations.</span>
+                if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    <form asp-controller="Registrations" asp-action="Register" method="post" class="d-inline">
+                        <input type="hidden" name="eventId" value="@Model.EventItem.Id" />
+                        <button type="submit" class="btn btn-warning btn-sm">Join Waitlist</button>
+                    </form>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Login"
+                       asp-route-returnUrl="@Url.Action("Details", "Events", new { id = Model.EventItem.Id })"
+                       class="btn btn-primary btn-sm">Login to Join Waitlist</a>
+                }
             }
             else if (User.Identity != null && User.Identity.IsAuthenticated)
             {

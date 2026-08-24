@@ -40,6 +40,9 @@ public class RegistrationsController : Controller
             case RegistrationResult.Success:
                 TempData["RegistrationMessage"] = "You have successfully registered for this event!";
                 break;
+            case RegistrationResult.Waitlisted:
+                TempData["RegistrationMessage"] = "This event is full, but you've been added to the waitlist. You'll be automatically confirmed if a spot opens up.";
+                break;
             default:
                 TempData["RegistrationMessage"] = "An error occurred while processing your request.";
                 break;
@@ -68,6 +71,7 @@ public class RegistrationsController : Controller
             case RegistrationResult.Success:
                 TempData["RegistrationMessage"] = "Your registration has been cancelled.";
                 break;
+          
             default:
                 TempData["RegistrationMessage"] = "An error occurred while processing your request.";
                 break;
